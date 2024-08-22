@@ -1,7 +1,7 @@
 package com.FrancisJones.NextWorkout.repositories;
 
-import org.springframework.stereotype.Repository;
+import com.FrancisJones.NextWorkout.entities.WorkoutEntity;
+import org.springframework.data.repository.CrudRepository;
 
-@Repository
-public class WorkoutRepository {
+public interface WorkoutRepository extends CrudRepository<WorkoutEntity, String> {
 }

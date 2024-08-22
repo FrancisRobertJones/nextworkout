@@ -3,6 +3,7 @@ package com.FrancisJones.NextWorkout.services;
 import com.FrancisJones.NextWorkout.dto.WorkoutDTO;
 import com.FrancisJones.NextWorkout.entities.WorkoutEntity;
 import com.FrancisJones.NextWorkout.repositories.WorkoutRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -12,9 +13,12 @@ public class WorkoutService {
     private WorkoutRepository workoutRepository;
     private WebClient webClient;
 
-    public WorkoutService(WorkoutRepository workoutRepository, WebClient.Builder webClientBuilder) {
+    public WorkoutService(WorkoutRepository workoutRepository,
+                          WebClient.Builder webClientBuilder,
+                          @Value("${GPTKEY}") String apiKey) {
         this.workoutRepository = workoutRepository;
-        this.webClient = webClientBuilder.baseUrl("https://api.openai.com/v1").build();  // Example base URL for GPT
+        this.webClient = webClientBuilder.baseUrl("https://api.openai.com/v1").build();
+        System.out.println("GPT API Key: " + apiKey);
     }
 
     public Mono<String> generateWorkoutJsonFromLLM(WorkoutDTO workoutDTO){
