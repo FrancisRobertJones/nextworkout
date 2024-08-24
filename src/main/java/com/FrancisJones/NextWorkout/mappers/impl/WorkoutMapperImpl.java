@@ -8,7 +8,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class WorkoutMapperImpl implements Mapper<WorkoutEntity, WorkoutDTO> {
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper;
+
+    public WorkoutMapperImpl(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
     @Override
     public WorkoutDTO mapTo(WorkoutEntity workoutEntity) {

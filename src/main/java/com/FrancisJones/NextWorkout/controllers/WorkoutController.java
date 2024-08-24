@@ -5,6 +5,7 @@ import com.FrancisJones.NextWorkout.entities.WorkoutEntity;
 import com.FrancisJones.NextWorkout.mappers.Mapper;
 import com.FrancisJones.NextWorkout.services.WorkoutService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,16 +21,24 @@ public class WorkoutController {
         this.workoutMapper = workoutMapper;
     }
 
-    @PostMapping(path = "workout/create")
+    @PostMapping(path = "/workout/create")
     public Mono<ResponseEntity<WorkoutDTO>> createWorkout(@RequestBody WorkoutDTO workoutDTO) {
         return workoutService.generateWorkoutJsonFromLLM(workoutDTO)
                 .flatMap(workoutJson -> {
                     workoutDTO.setWorkoutJson(workoutJson);
                     WorkoutEntity workoutEntityToBeSaved = workoutMapper.mapFrom(workoutDTO);
-                    WorkoutEntity savedWorkoutEntity = workoutService.saveWorkoutToDb(workoutEntityToBeSaved);
-                    WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
-                    return Mono.just(ResponseEntity.ok(responseDTO));
+                    return workoutService.saveWorkoutToDb(workoutEntityToBeSaved)
+                            .map(savedWorkoutEntity -> {
+                                WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
+                                return ResponseEntity.ok(responseDTO);
+                            });
                 });
+    }
+
+    @GetMapping(path="/workout/healthcheck")
+    public ResponseEntity<String> checkHealth(){
+        System.out.print("health check endpoint hit");
+        return ResponseEntity.ok("server up and running");
     }
 
 
