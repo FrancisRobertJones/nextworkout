@@ -30,6 +30,9 @@ public class WorkoutEntity {
     @Lob
     private String workoutJson;
     private LocalDateTime dateCreated;
+    @Lob
+    @Column(columnDefinition = "TEXT")
+    private String structuredWorkoutJSON;
 
     @ManyToOne
     @JoinColumn(name = "user_id")

@@ -26,11 +26,14 @@ public class WorkoutController {
         return workoutService.generateWorkoutJsonFromLLM(workoutDTO)
                 .flatMap(workoutJson -> {
                     workoutDTO.setWorkoutJson(workoutJson);
-                    WorkoutEntity workoutEntityToBeSaved = workoutMapper.mapFrom(workoutDTO);
-                    return workoutService.saveWorkoutToDb(workoutEntityToBeSaved)
-                            .map(savedWorkoutEntity -> {
-                                WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
-                                return ResponseEntity.ok(responseDTO);
+                    return workoutService.processWorkoutJsonResponse(workoutDTO)
+                        .flatMap(updatedWorkoutDto ->{
+                        WorkoutEntity workoutEntityToBeSaved = workoutMapper.mapFrom(updatedWorkoutDto);
+                            return workoutService.saveWorkoutToDb(workoutEntityToBeSaved)
+                                    .map(savedWorkoutEntity -> {
+                                        WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
+                                        return ResponseEntity.ok(responseDTO);
+                                    });
                             });
                 });
     }

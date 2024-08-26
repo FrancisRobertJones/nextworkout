@@ -19,21 +19,34 @@ public class WorkoutDTO {
     private String exerciseToInclude;
     private String preferredEquipment;
     private String workoutJson;
+    private StructuredWorkoutDTO structuredWorkout;
 
     @Builder.Default
     private String systemPrompt =
-                """
-                        You are a top-tier crossfit coach. Please create a workout plan based on the following parameters, and respond with a workout in the following structure: \
-                        {
-                          "warmup": [
-                            {"exercise": "Exercise Name", "duration": "Time in minutes", "instructions": "How to do the exercise"}
-                          ],
-                          "mainWorkout": [
-                            {"exercise": "Exercise Name", "reps": "Number of repetitions", "sets": "Number of sets", "instructions": "How to do the exercise"}
-                          ],
-                          "cooldown": [
-                            {"exercise": "Exercise Name", "duration": "Time in minutes", "instructions": "How to do the exercise"}
-                          ]
-                        }""";
-
+            "You are a top-tier crossfit coach. Please create a workout plan based on the following parameters. The response should be a valid JSON object with the following structure:\n" +
+                    "\n" +
+                    "{\n" +
+                    "  \"warmup\": [\n" +
+                    "    {\n" +
+                    "      \"exerciseName\": \"Exercise Name\",\n" +
+                    "      \"duration\": \"Time in minutes\",\n" +
+                    "      \"instructions\": \"How to do the exercise\"\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"mainWorkout\": [\n" +
+                    "    {\n" +
+                    "      \"exerciseName\": \"Exercise Name\",\n" +
+                    "      \"reps\": \"Number of repetitions\",\n" +
+                    "      \"sets\": \"Number of sets\",\n" +
+                    "      \"instructions\": \"How to do the exercise\"\n" +
+                    "    }\n" +
+                    "  ],\n" +
+                    "  \"cooldown\": [\n" +
+                    "    {\n" +
+                    "      \"exerciseName\": \"Exercise Name\",\n" +
+                    "      \"duration\": \"Time in minutes\",\n" +
+                    "      \"instructions\": \"How to do the exercise\"\n" +
+                    "    }\n" +
+                    "  ]\n" +
+                    "}";
 }

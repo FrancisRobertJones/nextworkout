@@ -1,5 +1,6 @@
 package com.FrancisJones.NextWorkout.services;
 
+import com.FrancisJones.NextWorkout.dto.StructuredWorkoutDTO;
 import com.FrancisJones.NextWorkout.dto.WorkoutDTO;
 import com.FrancisJones.NextWorkout.entities.WorkoutEntity;
 import com.FrancisJones.NextWorkout.repositories.WorkoutRepository;
@@ -19,11 +20,13 @@ import java.util.Objects;
 public class WorkoutService {
     private WorkoutRepository workoutRepository;
     private WebClient webClient;
+    private final ObjectMapper objectMapper;
 
     public WorkoutService(WorkoutRepository workoutRepository,
                           WebClient.Builder webClientBuilder,
                           @Value("${openai.api.key}") String apiKey,
-                          @Value("${openai.api.url}") String apiUrl)
+                          @Value("${openai.api.url}") String apiUrl,
+                         ObjectMapper objectMapper)
 
     {
         this.workoutRepository = workoutRepository;
@@ -31,30 +34,28 @@ public class WorkoutService {
                 .baseUrl(apiUrl)
                 .defaultHeader("Authorization", "Bearer " + apiKey)
                 .build();
+        this.objectMapper = objectMapper;
     }
 
     public Mono<String> generateWorkoutJsonFromLLM(WorkoutDTO workoutDTO){
         String prompt = buildGptPromptFromWorkoutDTO(workoutDTO);
-        List<Map<String, String>> messages = List.of(
-               Map.of("role", "system",
-                       "content", workoutDTO.getSystemPrompt()
-               ),
-                Map.of("role", "user",
-                        "content", prompt
-                )
-        );
-        Map<String, Object> payload = new HashMap<>();
-        payload.put("model", "gpt-3.5-turbo");
-        payload.put("messages", messages);
+        Map<String, Object> requestBody = buildRequestBody(workoutDTO.getSystemPrompt(), prompt);
 
-        return webClient.post()
-                .bodyValue(payload)
-                .retrieve()
-                .onStatus(
-                        status -> status.is4xxClientError() || status.is5xxServerError(),
-                        response -> Mono.error(new RuntimeException("Failed to call GPT API"))
-                )
-                .bodyToMono(String.class);
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(requestBody);
+
+            return webClient.post()
+                    .bodyValue(jsonPayload)
+                    .header("Content-Type", "application/json")
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> Mono.error(new RuntimeException("Failed to call GPT API"))
+                    )
+                    .bodyToMono(String.class);
+        } catch (JsonProcessingException e) {
+            return Mono.error(new RuntimeException("Error serializing request body", e));
+        }
     }
 
     public Mono<WorkoutEntity> saveWorkoutToDb(WorkoutEntity workoutEntity) {
@@ -71,17 +72,39 @@ public class WorkoutService {
                 + workoutDTO.getPreferredEquipment() + ". Provide a detailed and structured workout plan.";
     }
 
-    private String buildRequestBody(String prompt) {
-        Map<String, Object> requestBody =  new HashMap<>();
-        requestBody.put("model", "text-davinci-003");
-        requestBody.put("prompt", prompt);
-        requestBody.put("max_tokens", 150);
+    private Map<String, Object> buildRequestBody(String systemPrompt, String userPrompt) {
+        List<Map<String, String>> messages = List.of(
+                Map.of("role", "system",
+                        "content", systemPrompt
+                ),
+                Map.of("role", "user",
+                        "content", userPrompt
+                )
+        );
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("model", "gpt-3.5-turbo");
+        payload.put("messages", messages);
+        return payload;
+    }
 
-        ObjectMapper objectMapper = new ObjectMapper();
+    public Mono<WorkoutDTO> processWorkoutJsonResponse(WorkoutDTO workoutDTO) {
+        return Mono.fromCallable(() -> {
+            StructuredWorkoutDTO structuredWorkout = parseWorkoutContent(workoutDTO.getWorkoutJson());
+            workoutDTO.setStructuredWorkout(structuredWorkout);
+            return workoutDTO;
+        });
+    }
+
+    public StructuredWorkoutDTO parseWorkoutContent(String workoutJson) {
         try {
-            return objectMapper.writeValueAsString(requestBody);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error building JSON request body", e);
+            Map<String, Object> responseMap = objectMapper.readValue(workoutJson, Map.class);
+            List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
+            Map<String, Object> firstChoice = choices.get(0);
+            Map<String, Object> message = (Map<String, Object>) firstChoice.get("message");
+            String workoutContent = (String) message.get("content");
+            return objectMapper.readValue(workoutContent, StructuredWorkoutDTO.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to parse workout JSON", e);
         }
     }
 }
