@@ -41,9 +41,35 @@ public class WorkoutService {
         String prompt = buildGptPromptFromWorkoutDTO(workoutDTO);
         Map<String, Object> requestBody = buildRequestBody(workoutDTO.getSystemPrompt(), prompt);
 
-        try {
-            String jsonPayload = objectMapper.writeValueAsString(requestBody);
+        String jsonPayload;
 
+        try {
+            jsonPayload = objectMapper.writeValueAsString(requestBody);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        return webClient
+                .post()
+                .bodyValue(jsonPayload)
+                .header("Content-Type", "application/json")
+                .retrieve()
+                .onStatus(httpStatusCode -> httpStatusCode.is5xxServerError() || httpStatusCode.is4xxClientError(),
+                        clientResponse -> Mono.error(new RuntimeException("Failed to call gpt API"))
+                )
+                .bodyToMono(String.class);
+
+
+
+
+
+/*
+
+        String jsonPayload;
+        try {
+             jsonPayload = objectMapper.writeValueAsString(requestBody);
+        } catch (JsonProcessingException e) {
+            return Mono.error(new RuntimeException("Error serializing request body", e));
+        }
             return webClient.post()
                     .bodyValue(jsonPayload)
                     .header("Content-Type", "application/json")
@@ -53,9 +79,8 @@ public class WorkoutService {
                             response -> Mono.error(new RuntimeException("Failed to call GPT API"))
                     )
                     .bodyToMono(String.class);
-        } catch (JsonProcessingException e) {
-            return Mono.error(new RuntimeException("Error serializing request body", e));
-        }
+*/
+
     }
 
     public Mono<WorkoutEntity> saveWorkoutToDb(WorkoutEntity workoutEntity) {
@@ -104,7 +129,9 @@ public class WorkoutService {
             String workoutContent = (String) message.get("content");
             return objectMapper.readValue(workoutContent, StructuredWorkoutDTO.class);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse workout JSON", e);
+            System.err.println("Failed to parse workout JSON: " + workoutJson);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to parse workout JSON", e );
         }
     }
 }

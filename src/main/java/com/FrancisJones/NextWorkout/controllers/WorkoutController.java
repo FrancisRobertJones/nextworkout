@@ -24,18 +24,20 @@ public class WorkoutController {
     @PostMapping(path = "/workout/create")
     public Mono<ResponseEntity<WorkoutDTO>> createWorkout(@RequestBody WorkoutDTO workoutDTO) {
         return workoutService.generateWorkoutJsonFromLLM(workoutDTO)
-                .flatMap(workoutJson -> {
-                    workoutDTO.setWorkoutJson(workoutJson);
+                .flatMap(workoutJSON -> {
+                    workoutDTO.setWorkoutJson(workoutJSON);
                     return workoutService.processWorkoutJsonResponse(workoutDTO)
-                        .flatMap(updatedWorkoutDto ->{
-                        WorkoutEntity workoutEntityToBeSaved = workoutMapper.mapFrom(updatedWorkoutDto);
-                            return workoutService.saveWorkoutToDb(workoutEntityToBeSaved)
-                                    .map(savedWorkoutEntity -> {
-                                        WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
-                                        return ResponseEntity.ok(responseDTO);
-                                    });
+                            .flatMap(updatedWorkoutDTO -> {
+                                WorkoutEntity workoutEntityToBeSaved = workoutMapper.mapFrom(updatedWorkoutDTO);
+                                return workoutService.saveWorkoutToDb(workoutEntityToBeSaved)
+                                        .map(savedWorkoutEntity -> {
+                                            WorkoutDTO responseDTO = workoutMapper.mapTo(savedWorkoutEntity);
+                                            return ResponseEntity.ok(responseDTO);
+                                        });
                             });
                 });
+
+        //generate, set, save
     }
 
     @GetMapping(path="/workout/healthcheck")
