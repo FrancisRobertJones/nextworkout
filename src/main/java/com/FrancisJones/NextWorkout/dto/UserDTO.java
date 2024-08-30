@@ -15,4 +15,5 @@ public class UserDTO {
     private Long id;
     private String nickname;
     private List<WorkoutDTO> workouts;
+    private List<String> preferredEquipment;
 }

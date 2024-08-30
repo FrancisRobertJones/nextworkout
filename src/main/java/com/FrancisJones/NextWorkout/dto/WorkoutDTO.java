@@ -23,37 +23,35 @@ public class WorkoutDTO {
 
     @Builder.Default
     private String systemPrompt =
-            "Create a detailed workout plan with the following parameters:\n" +
-                    "\n" +
-                    "- **Workout Type**: {workoutType} (e.g., AMRAP, EMOM, For Time). The workout should strictly adhere to the style specified, focusing on the principles and goals associated with this type. For instance, if the workout type is AMRAP, ensure it is structured to maximize rounds within a set time.\n" +
-                    "\n" +
-                    "- **Total Session Length**: {totalSessionLength} minutes. Please include time for warm-up, the main workout, and cool down within this duration.\n" +
-                    "\n" +
-                    "- **Main Workout Length**: {workoutLength} minutes. Dedicate this time specifically to the main workout section, ensuring it aligns with the chosen workout style.\n" +
-                    "\n" +
-                    "- **Focus Muscle Groups**: Include exercises targeting {muscleGroupsToInclude} and avoid exercises for {muscleGroupsToAvoid}.\n" +
-                    "\n" +
-                    "- **Preferred Equipment**: Focus on using {preferredEquipment}. If any exercises require equipment that is not listed, suggest alternatives or modifications.\n" +
-                    "\n" +
-                    "- **Exercises to Include**: Prioritize including {exerciseToInclude} in the workout.\n" +
-                    "\n" +
-                    "- **Exercises to Avoid**: Do not include {exercisesToAvoid} in the workout.\n" +
-                    "\n" +
-                    "- **Warm-up and Cooldown**: Include a brief warm-up and cooldown session.\n" +
-                    "\n" +
-                    "For each exercise, provide:\n" +
-                    "1. **Name of the exercise**\n" +
-                    "2. **Number of sets and reps** (or time duration if applicable)\n" +
-                    "3. **Instructions on how to perform the exercise**\n" +
-                    "\n" +
-                    "Ensure that the workout plan aligns strictly with the specified workout type and that the estimated duration for each exercise adds up appropriately within the total session length. The response should be a valid JSON object with the following structure:\n" +
+                    "Create a workout plan based on the following details:\n\n" +
+                    "Workout Category: [Strength/Hypertrophy/Cardio/Hybrid]\n\n" +
+                    "Total Session Length: [e.g., 60 minutes]\n\n" +
+                    "Preferred Equipment: [e.g., dumbbells, kettlebell, treadmill, etc.]\n\n" +
+                    "Muscle Groups to Focus On: [e.g., back, lats, biceps]\n\n" +
+                    "Muscle Groups to Avoid: [e.g., legs, lower back]\n\n" +
+                    "Exercises to Include: [e.g., squats, push-ups]\n\n" +
+                    "Exercises to Avoid: [e.g., pull-ups]\n\n" +
+                    "Rest Time Between Sets: [e.g., 60 seconds for hypertrophy, or specify differently for strength/cardio/hybrid]\n\n" +
+                    "Workout Structure:\n\n" +
+                     "- For Strength: Focus on exercises that promote strength training. " +
+                            "Include multiple sets of each exercise with a specific number of repetitions and rest periods between sets Vary the amount of sets, and reps to make it interesting and fun, but naturally strength will be on the lower end of reps with longer breaks.\n\n" +
+                    "- For Hypertrophy: Focus on exercises that promote muscle growth with moderate to heavy weights. " +
+                    "Include multiple sets of each exercise with a specific number of repetitions and rest periods between sets Vary the amount of sets, and reps to make it interesting and fun, but naturally hypertrophy will be on the higher end of reps with shorter breaks.\n\n" +
+                    "- For Cardio: Focus on exercises that maintain an elevated heart rate. Include continuous movements like running, " +
+                    "cycling, or bodyweight exercises with minimal rest.\n\n" +
+                    "- For Hybrid: Include a mix of weightlifting exercises and cardio exercises. Specify the equipment for cardio and " +
+                    "the exercises for strength training. Rest times should be managed between sets, considering the mix of cardio and strength exercises.\n\n" +
+                    "Prioritise time allocation to correct rest times between sets. If workouts are short, and strength workout is specified keep the total amount of exercises lower to accommodate rest. Generate a workout plan that includes a warm-up (warm exercises should be kept short), main workout, and cooldown (give specific exercises), with estimated durations for each exercise, " +
+                    "and specify rest times between sets for each exercise. Vary warmups, make them imaginative, change it up and keep it relevant to the main goal of the workout"+
                     "\n" +
                     "{\n" +
                     "  \"warmup\": [\n" +
                     "    {\n" +
                     "      \"exerciseName\": \"Exercise Name\",\n" +
-                    "      \"duration\": \"Time in minutes\",\n" +
+                    "      \"reps\": \"Number of repetitions\",\n" +
+                    "      \"sets\": \"Number of sets\",\n" +
                     "      \"instructions\": \"How to do the exercise\"\n" +
+                    "       \"restTimeBetweenSets\": \"Rest between sets\"\n" +
                     "    }\n" +
                     "  ],\n" +
                     "  \"mainWorkout\": [\n" +
@@ -62,6 +60,7 @@ public class WorkoutDTO {
                     "      \"reps\": \"Number of repetitions\",\n" +
                     "      \"sets\": \"Number of sets\",\n" +
                     "      \"instructions\": \"How to do the exercise\"\n" +
+                    "       \"restTimeBetweenSets\": \"Rest between sets\"\n" +
                     "    }\n" +
                     "  ],\n" +
                     "  \"cooldown\": [\n" +
@@ -69,6 +68,7 @@ public class WorkoutDTO {
                     "      \"exerciseName\": \"Exercise Name\",\n" +
                     "      \"duration\": \"Time in minutes\",\n" +
                     "      \"instructions\": \"How to do the exercise\"\n" +
+                    "       \"restTimeBetweenSets\": \"Rest between sets\"\n" +
                     "    }\n" +
                     "  ]\n" +
                     "}";

@@ -16,4 +16,5 @@ public class ExerciseDetailDTO {
     private String reps;
     private String sets;
     private String instructions;
+    private String restTimeBetweenSets;
 }
