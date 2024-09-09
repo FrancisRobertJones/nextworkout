@@ -9,6 +9,7 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import java.util.Arrays;
 @Configuration
 public class WebFluxConfig {
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
