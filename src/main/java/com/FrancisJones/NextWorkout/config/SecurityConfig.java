@@ -1,5 +1,6 @@
 package com.FrancisJones.NextWorkout.config;
 
+import com.FrancisJones.NextWorkout.utils.JwtUtil;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -21,6 +22,14 @@ import java.net.URI;
 @EnableWebFluxSecurity
 public class SecurityConfig {
 
+    private final JwtUtil jwtUtil;
+    public final JwtAuthentificationFilter jwtAuthentificationFilter;
+
+    public SecurityConfig(JwtUtil jwtUtil, JwtAuthentificationFilter jwtAuthentificationFilter) {
+        this.jwtUtil = jwtUtil;
+        this.jwtAuthentificationFilter = jwtAuthentificationFilter;
+    }
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
@@ -29,7 +38,7 @@ public class SecurityConfig {
                         .anyExchange().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .authenticationSuccessHandler(successHandler())
+                        .authenticationSuccessHandler(new JwtSuccessHandler(jwtUtil))
                 )
                 .logout(logout -> logout
                         .logoutSuccessHandler(logoutSuccessHandler())

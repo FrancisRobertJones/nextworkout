@@ -1,5 +1,7 @@
 package com.FrancisJones.NextWorkout.utils;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwt;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,6 +36,19 @@ public class JwtUtil {
                 .and()
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
+    public String getSubject(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.getSubject();
     }
 
 }
